@@ -1,0 +1,55 @@
+﻿素材来源 · 下载日期 2026-10-09
+
+惠惠 Live2D
+公开资源仓库：https://github.com/HaiKonofanDesu/konofan-live2d
+目录：102 - Megumin / no eyepatch megumin 与 eyepatch megumin
+资源来自《为美好的世界献上祝福！Fantastic Days》游戏。
+每套包含 Character.moc3、model3.json、physics3.json、2048×2048 纹理和 37 个动作。
+文件：assets/models/megumin 与 assets/models/megumin-eyepatch。
+程序直接加载原模型，分层渲染并调整头身比例及桌前双手位置；
+所有角色细节仍来自原模型，未用几何图形重新画角色。
+仓库未明确授予这些游戏角色素材商业使用许可；素材权利归相关权利方。
+
+逗之助
+官方页面：https://konosubafd.jp/index.html
+官方原图：https://konosubafd.jp/img/index/003_chomusuke_profile.png
+文件：assets/chomusuke-official-profile.png，928×500，原有透明通道保留。
+原图包含角色及介绍；运行时只显示左侧角色区域，未重新画猫的五官和轮廓。
+官方标记：©2019 暁なつめ・三嶋くろね／KADOKAWA／映画このすば製作委員会 ©Sumzap, Inc.
+
+图标
+第三季官网：https://konosuba.com/3rd/character/
+原图：https://konosuba.com/3rd/character/img/thumb-megumin.png
+assets/icon.ico 由官方头像转换格式。
+©2024 暁なつめ・三嶋くろね／KADOKAWA／このすば3製作委員会
+
+本程序为个人桌宠制作，不代表官方产品。
+依赖的 MIT、BSD、LGPL 等许可不覆盖动漫角色、游戏模型或官方原画。
+
+爆裂演出参考
+第一季第二话官方剧情与剧照：https://konosuba.com/1st/story/?id=02&mode=detail
+第一季第四话官方剧情与剧照：https://konosuba.com/1st/story/?id=04&mode=detail
+参考举杖咏唱、魔力聚集、爆炸光芒及施法后耗尽体力的表现。
+法杖道具、分阶段法阵、光柱、焰团、冲击波与光粒均为本程序实时绘制；
+未将剧集画面、音轨或剧照作为运行时特效素材。角色继续使用上述原生 Live2D 模型。
+
+惠惠语音（本次由用户指定资源）
+项目：https://github.com/pcrbot/Explosion
+语音 Release：https://github.com/pcrbot/Explosion/releases/tag/1.0
+原资源包：https://github.com/pcrbot/Explosion/releases/download/1.0/explosion.zip
+作者：Soung2279。下载日期 2026-10-09。原包含 10 个“施法吟诵”MP3 文件。
+角色日语 CV 来源核对：https://konosuba.com/3rd/character/ （惠惠：高桥李依）
+运行资源：assets/voices，保留语音清单、来源文件名和原 MP3 SHA256。
+处理：解码为 PCM16；截取完整喊声/吟唱；裁去片段外长尾音；短首尾淡入淡出。
+自我介绍、开心短句同样从第 10 段原始语音截取，未另造人物台词。
+未引入该仓库的 HoshinoBot 插件代码，保留其附带 AGPL-3.0 许可文本与来源说明。
+声优表演、动漫对白、音乐及音效的权利仍归原权利方；公开仓库不另授予这些权利。
+用户另提供的 https://www.101soundboards.com/boards/76205-megumin-soundboard
+本次页面请求返回 403，未将其音频加入程序；也未使用该站所推荐的 TTS 模型。
+
+v12 新增：14 条关节动作贝塞尔曲线和半屏十字粒子演出为本项目原创；运行时使用原模型参数和纹理。
+模型源文件 .moc3 与原纹理不变；仅在两套 model3.json 中增加 DeskPet 动作组，挂载新 motion3 文件。
+未编辑 Cubism Editor 中的空白测试模型，未声称得到原角色 .cmo3。
+
+
+v12 模型语音：用户本地 C:\惠惠语音模型 提供的 v2ProPlus 权重与参考音频；通过官方 GPT-SoVITS（https://github.com/RVC-Boss/GPT-SoVITS）本地合成 24 条新写的日语台词。AI 合成音频不属于声优新录音。用户模型附带非商业、学习交流说明已保留于开源许可目录。模型权重本身不包含在桌宠包中。哈希及合成记录见 assets/voices/generated/generation.json。

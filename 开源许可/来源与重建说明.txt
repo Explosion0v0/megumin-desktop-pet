@@ -1,0 +1,35 @@
+﻿本程序采用的开源库未做修改。
+
+Qt / PySide6 / Shiboken6 6.11.2
+采用 LGPLv3 开源许可。完整条款见 Qt-LGPL-3.0.txt 和 Qt-GPL-3.0.txt。
+PySide6 原始源码：https://code.qt.io/cgit/pyside/pyside-setup.git/?h=v6.11.2
+Qt 原始源码：https://download.qt.io/archive/qt/6.11/6.11.2/single/
+对应 Qt 标签：https://github.com/qt/qtbase/tree/v6.11.2
+Qt 第三方组件声明：https://doc.qt.io/qt-6/licenses-used-in-qt.html
+PySide6 项目：https://pypi.org/project/PySide6/6.11.2/
+Qt 版权声明及其依赖声明保留在各项目原始源码中。
+
+可修改与重建
+随附的“惠惠桌宠-Live2D-源码.zip”含有全部应用 Python 源码、素材和构建命令。
+可以在 Python 环境中安装或替换 PySide6 / Qt，并重新执行 README.md 中的 PyInstaller
+构建命令生成可执行程序。也可以直接从 Python 运行源码，动态链接替换后的 Qt 库。
+允许为了调试修改过的上述库而进行逆向工程。代码不限制替换库或重建。
+
+PyInstaller 6.22.3
+许可见 PyInstaller-COPYING.txt。bootloader 例外允许分发打包后的应用。
+源码：https://github.com/pyinstaller/pyinstaller/tree/v6.22.3
+
+Pillow 12.3.0
+许可与第三方声明见 Pillow-LICENSE.txt。
+源码：https://github.com/python-pillow/Pillow/tree/12.3.0
+
+Python 3.11.1
+许可见 Python-LICENSE.txt。
+源码：https://www.python.org/downloads/release/python-3111/
+
+live2d-py 1.0.0：MIT 包装库，见 live2d-py-MIT.txt。
+项目：https://github.com/EasyLive2D/live2d-py
+Cubism Framework 与 Core 分别适用 Live2D Open Software 和 Proprietary Software 条款；
+保留完整官方条款 HTML 及 SDK 许可说明，MIT 不覆盖 Core。
+PyOpenGL 3.1.10：见 PyOpenGL-LICENSE.txt，https://github.com/mcfletch/pyopengl
+NumPy 2.4.6：完整许可与第三方声明见 numpy 文件夹。

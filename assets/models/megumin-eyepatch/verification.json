@@ -1,0 +1,37 @@
+{
+  "name": "eyepatch megumin",
+  "files": 41,
+  "bytes": 3387635,
+  "motion_groups": {
+    "": 37
+  },
+  "textures": [
+    {
+      "path": "textures/texture_00.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "mode": "RGBA"
+    }
+  ],
+  "groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "PARAM_EYE_R_OPEN",
+        "PARAM_EYE_L_OPEN"
+      ]
+    },
+    {
+      "Target": "Parameter",
+      "Name": "LipSync",
+      "Ids": [
+        "PARAM_MOUTH_OPEN_Y"
+      ]
+    }
+  ],
+  "download_verified": true,
+  "render_tested": false
+}
