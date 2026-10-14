@@ -30,3 +30,6 @@ backend/gpt-sovits/
 backend/generated-pet-voices/
 recordings/
 user-data/
+
+music-library*.json
+time-greetings.json

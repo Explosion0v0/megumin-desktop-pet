@@ -24,7 +24,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='MeguminPet-Live2D-v20',
+    name='MeguminPet-Live2D-v23',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -2,12 +2,18 @@
 
 [![Code License: MIT](https://img.shields.io/badge/Code%20License-MIT-blue.svg)](LICENSE)
 
-Windows Live2D 桌宠与桌面小助手，v20 完整运行资源和 EXE 现已公开，方便爱好者下载、研究和改进。非官方项目。
+Windows Live2D 桌宠与桌面小助手，v23 完整运行资源和 EXE 现已公开，方便爱好者下载、研究和改进。非官方项目。
 
 ## 下载即用
-从 [v20 完整发布](https://github.com/Explosion0v0/megumin-desktop-pet-open-source/releases/tag/v20) 下载 `MeguminPet-Live2D-v20.exe`，Windows 上双击运行，不需安装 Python。也可下载完整 ZIP 或含素材的源码 ZIP。
+从 [v23 完整发布](https://github.com/Explosion0v0/megumin-desktop-pet/releases/tag/v23) 下载 `MeguminPet-Live2D-v23.exe`，Windows 上双击运行，不需安装 Python。也可下载完整 ZIP 或含素材的源码 ZIP。
 新电脑默认使用无需 API 的本地小助手；联网 AI 问答请在“AI 设置”填写**你自己的**接口、模型和 API Key。
 发布文件不含作者的 API Key、私人接口配置、聊天记录或麦克风录音。个人配置仅保存在本机 `%APPDATA%/MeguminDesktopPet/`，不要上传。
+
+## v23 新增与修复
+- 六套装扮：经典、眼罩、校服、咖啡厅、新年和服、睡衣；右键“服装造型”切换，默认校服。
+- 每套两条独立日语换装语音，配中文字幕和嘴型；生成短句不是声优新录音。原十种爆裂咏唱保留。
+- 咖啡厅、和服、睡衣爆裂演出使用原生全身模型；和服显示完整衣摆，其余三套仍按原素材半身/膝上展示，不伪造腿脚。
+- 法杖随人物镜头缩放保持比例，修复和服键盘手缺失；保留原法杖外形。
 
 ## 功能
 - 键盘/鼠标独立联动；键盘手限制自然可达距离，范围外按键不再拉长手臂。

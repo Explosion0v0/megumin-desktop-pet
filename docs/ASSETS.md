@@ -1,6 +1,7 @@
-# v20 运行资源
-当前仓库包含 `assets/models/megumin` 与 `megumin-eyepatch` 的 moc3、纹理、动作；官方逗之助图片及图标；十种爆裂咏唱、预生成日语短句；中文 Vosk 小模型；原创动作/角色提示文件。
-`python tools/check_assets.py` 检查核心素材与模型引用，资源存在时退出 0，缺失时退出 2 并列出路径。不会自动下载。
-原始模型不是 `.cmo3` 编辑工程。换角色需调整 `live_character.py` 参数/部件映射。动态日语语音的训练权重/参考录音不包含，见 VOICE_BACKEND.md。
-没有歌曲、账号资料、用户录音或作者的 AI Key。
-模型/图片/录音不属于 MIT 授权范围；公开资源的来源与权利说明见根目录 `素材来源.txt`、THIRD_PARTY_NOTICES.md 与 `开源许可/`。公开下载并不替代使用或再分发所需许可。
+# v23 运行资源
+六套模型目录：megumin、megumin-eyepatch、megumin-schooluniform、megumin-cafe、megumin-ny、megumin-pj，包含 moc3、纹理和动作。新增四套来自素材来源.txt 记录的同一固定提交。
+随附逗之助官方图、图标、原十种爆裂咏唱、预生成日语短句、十二条换装短句、Vosk 中文识别资源和原创动作。
+运行 `python tools/check_assets.py` 检查六套模型引用与音频引用；缺失时退出 2。不会自动下载。
+咖啡厅/睡衣显示原生腿脚，和服显示完整衣摆；原经典/眼罩/校服素材不包含完整小腿鞋子，不伪造全身。没有 Cubism .cmo3 原工程。
+动态日语 AI 语音仍需自备 GPT-SoVITS 后端和权重，见 VOICE_BACKEND.md。歌曲、权重、用户录音、账号资料及作者的 AI 密钥不包含。
+角色、录音、生成声音等不是 MIT 素材，来源和原条款见素材来源.txt、THIRD_PARTY_NOTICES.md、开源许可/。

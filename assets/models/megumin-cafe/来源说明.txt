@@ -1,0 +1,5 @@
+惠惠四星咖啡厅原始 Live2D 模型
+来源：https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20cafe%20megumin
+固定提交：4b2780d63fb26a5a657e712994b8291bd02b959e
+下载字节已逐一校验 Git blob SHA1 与 SHA256。
+.moc3 是运行资源，不是 .cmo3 编辑工程。原游戏/角色素材权利保留，公开下载不等于自由再分发或商业许可。

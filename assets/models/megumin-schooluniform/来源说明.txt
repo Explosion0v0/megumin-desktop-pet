@@ -1,0 +1,5 @@
+惠惠四星校服 Live2D 原始模型
+来源：https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20schooluniform%20megumin
+固定提交：4b2780d63fb26a5a657e712994b8291bd02b959e
+所有下载文件逐一验证 Git blob SHA1 与本地 SHA256。未改动下载模型文件。
+资源来自 Fantastic Days 游戏；公开下载不代表取得角色素材的自由分发或商业许可。模型是 .moc3 运行资源，不是 Cubism Editor 的 .cmo3 原工程。

@@ -13,6 +13,7 @@ from OpenGL import GL
 import live2d
 from spell_scene import ease,desk_visibility,caster_visibility,CAST_RELEASE,CAST_RETURN
 from rig_motion import Spring,PointSpring,CastClip,keyboard_contact,keyboard_layout
+from costumes import COSTUMES
 
 
 class Live2DCharacter:
@@ -28,6 +29,9 @@ class Live2DCharacter:
         self.cat_art=QPixmap(str(self.assets/'chomusuke-official-profile.png'))
         if self.cat_art.isNull():raise RuntimeError('逗之助原画素材加载失败')
         self.pointer=QPointF(240,220)
+        self.costume='schooluniform' if (self.assets/'models/megumin-schooluniform/Character.model3.json').is_file() else 'classic'
+        self.loaded_costume=None;self.full_body=False;self.cast_body_bounds=None
+        self.loaded_school_uniform=False
         self.eyepatch=False
         self.loaded_eyepatch=False
         self.closed=False
@@ -82,7 +86,9 @@ class Live2DCharacter:
     def load_model(self,eyepatch):
         if self.model:
             self.model.DestroyRenderer();self.model=None
-        folder='megumin-eyepatch' if eyepatch else 'megumin'
+        selected=self.costume if self.costume in COSTUMES else 'schooluniform'
+        if selected=='classic' and eyepatch:selected='eyepatch'
+        folder=COSTUMES[selected]['folder']
         path=self.assets/'models'/folder/'Character.model3.json'
         self.model=live2d.Model();self.model.LoadModelJson(str(path.resolve()))
         self.model.Resize(self.fbo.width(),self.fbo.height())
@@ -91,7 +97,9 @@ class Live2DCharacter:
         data=json.loads(path.read_text(encoding='utf-8'))
         self.motions={Path(x['File']).stem.replace('.motion3',''):i for i,x in enumerate(data['FileReferences']['Motions'][''])}
         self.param_ids=set(self.model.GetParamIds())
-        self.loaded_eyepatch=eyepatch
+        self.loaded_costume=selected;self.full_body=COSTUMES[selected]['full_body'];self.cast_body_bounds=None
+        self.loaded_eyepatch=selected=='eyepatch'
+        self.loaded_school_uniform=selected=='schooluniform'
         self.last_state=None
         self.filtered_params={}
         self.joint_springs={}
@@ -99,11 +107,19 @@ class Live2DCharacter:
         self.cast_hand_mesh=None
         self.cast_grip_weights=None
         self.part_ids=self.model.GetPartIds()
-        self.part_groups=dict(torso=['PartUpperBody','PartNeck'],R=['PartArmR','PartHandR'],L=['PartArmL','PartHandL2'])
-        self.part_groups['head']=[x for x in self.part_ids if x not in ['PartCore','PartUpperBody','PartNeck','PartArmR','PartArmL','PartFoot','PartHandR','PartHandL2']]
+        # DrawingOrder parts are shared, non-drawing ancestors, not an R arm.
+        # Keep them enabled in every isolated pass so their L-arm descendants
+        # do not disappear (the kimono model uses this native hierarchy).
+        self.visibility_support_parts=[x for x in self.part_ids if x.startswith('PartDrawingOrder')]
+        self.part_groups=dict(torso=['PartUpperBody','PartNeck'],
+            R=[x for x in self.part_ids if x.startswith(('PartArmR','PartHandR'))],
+            L=[x for x in self.part_ids if x.startswith(('PartArmL','PartHandL'))])
+        excluded=set(['PartCore','PartFoot']+self.visibility_support_parts+self.part_groups['torso']+self.part_groups['R']+self.part_groups['L'])
+        self.part_groups['head']=[x for x in self.part_ids if x not in excluded]
         self.part_groups['front_hair']=['PartFrontHair']
         self.renderer_info.update(cubism_version=self.model.Version(),parameter_count=self.model.GetParamCount(),
-                                  motion_count=self.model.GetMotionCount(''),choreography_motion_count=self.model.GetMotionCount('DeskPet'),model_file=str(path))
+                                  motion_count=self.model.GetMotionCount(''),choreography_motion_count=self.model.GetMotionCount('DeskPet'),model_file=str(path),
+                                  costume=selected,full_body_cast=self.full_body)
 
     def param(self,name,value):
         if name in self.param_ids:
@@ -119,7 +135,9 @@ class Live2DCharacter:
     def draw(self,p,e,now,reduced=False,for_mask=False):
         if self.closed:return
         self.context.makeCurrent(self.surface)
-        if self.eyepatch!=self.loaded_eyepatch:self.load_model(self.eyepatch)
+        selected=self.costume if self.costume in COSTUMES else 'schooluniform'
+        if selected=='classic' and self.eyepatch:selected='eyepatch'
+        if selected!=self.loaded_costume:self.load_model(self.eyepatch)
         state=e.state
         age=e.visual_age(now)
         dt=max(0,min(.05,now-self.last_render));self.last_render=now
@@ -221,7 +239,7 @@ class Live2DCharacter:
             self.context.doneCurrent();self.draw_caster(p,e,age,reduced);return
         layers={}
         for name,visible in self.part_groups.items():
-            for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in visible else 0)
+            for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in visible or part in self.visibility_support_parts else 0)
             self.fbo.bind();GL.glViewport(0,0,self.fbo.width(),self.fbo.height());live2d.clearBuffer()
             self.model.Draw();layers[name]=self.fbo.toImage();self.fbo.release()
         for i in range(len(self.part_ids)):self.model.SetPartOpacity(i,1)
@@ -295,9 +313,12 @@ class Live2DCharacter:
         self.context.makeCurrent(self.surface)
         native_fbo=self.cast_fbo;render_scale=1.5
         self.model.Resize(720,675)
-        # Keep the same source camera as the seated layers: the head then
-        # coincides throughout the blend instead of producing a double face.
-        self.model.SetScale(1.45);self.model.SetOffset(0,-.65)
+        # For verified full-body assets pull the native camera back, continuously,
+        # rather than cropping the knees or fabricating missing anatomy.
+        depart=ease(age/.8)*(1-ease((age-CAST_RETURN)/1.1))
+        reveal=depart if self.full_body else 0
+        camera_scale=1.45-.45*reveal
+        self.model.SetScale(camera_scale);self.model.SetOffset(0,-.65*(1-reveal))
         for i in range(len(self.part_ids)):self.model.SetPartOpacity(i,1)
         native_fbo.bind();GL.glViewport(0,0,720,675);live2d.clearBuffer();self.model.Draw()
         frame=native_fbo.toImage();native_fbo.release()
@@ -305,14 +326,14 @@ class Live2DCharacter:
         # front of the wand. A rectangle copied from the full frame also copied
         # unrelated hair/body pixels and caused the previous false overlaps.
         front_parts=set(self.part_groups['head']+self.part_groups['R']+self.part_groups['L'])
-        for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in front_parts else 0)
+        for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in front_parts or part in self.visibility_support_parts else 0)
         native_fbo.bind();live2d.clearBuffer();self.model.Draw();occlusion=native_fbo.toImage();native_fbo.release()
         for i in range(len(self.part_ids)):self.model.SetPartOpacity(i,1)
         if self.cast_hand_mesh is None and self.model.GetParamValueById('PARAM_HAND_R_05')>.985:
             # Identify the fist by the pixels that disappear when its native
             # hand-form parameter is turned off, rather than selecting a cuff
             # near an invisible neutral hand mesh.
-            for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in self.part_groups['R'] else 0)
+            for i,part in enumerate(self.part_ids):self.model.SetPartOpacity(i,1 if part in self.part_groups['R'] or part in self.visibility_support_parts else 0)
             native_fbo.bind();live2d.clearBuffer();self.model.Draw();on=native_fbo.toImage()
             value=self.model.GetParamValueById('PARAM_HAND_R_05');self.param('PARAM_HAND_R_05',0)
             live2d.clearBuffer();self.model.Draw();off=native_fbo.toImage()
@@ -342,24 +363,36 @@ class Live2DCharacter:
         else:wrist=self.hand_position('R')
         self.cast_frame=frame;self.frame=frame
         self.model.Resize(self.fbo.width(),self.fbo.height());self.model.SetScale(1.45);self.model.SetOffset(0,-.65);self.context.doneCurrent()
-        # Render original model as a knee-up cinematic shot. A runtime alpha
-        # veil joins its lower asset boundary to the floor spell, without new legs.
-        depart=ease(age/.8)*(1-ease((age-CAST_RETURN)/1.1))
-        fade=QPainter(frame);fade.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
-        bottom=(300+150*depart)*render_scale
-        ramp=QLinearGradient(0,bottom-35*render_scale,0,bottom);ramp.setColorAt(0,QColor(255,255,255,255));ramp.setColorAt(1,QColor(255,255,255,0));fade.fillRect(frame.rect(),ramp);fade.end()
-        transform=QTransform();transform.translate(279-105*depart,238-65*depart)
-        scale=1.25-.47*depart;transform.scale(scale,scale);transform.translate(-240,-200)
+        # Preserve shoes/hem alpha for full-body models; retain the original
+        # bottom veil only for knee-up assets. Anchor native feet to the floor.
+        y=238-65*depart;scale=1.25-.47*depart
+        if self.full_body:
+            alpha=np.frombuffer(frame.bits(),np.uint8).reshape(frame.height(),frame.bytesPerLine())[:,:frame.width()*4].reshape(frame.height(),frame.width(),4)[:,:,3]
+            ys,xs=np.nonzero(alpha>20)
+            if len(ys):
+                self.cast_body_bounds=[int(xs.min()),int(ys.min()),int(xs.max()),int(ys.max())]
+                foot=ys.max()/render_scale;final_y=380-.78*(foot-200)
+                y+=(final_y-173)*depart
+        else:
+            self.cast_body_bounds=None
+            fade=QPainter(frame);fade.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationIn)
+            bottom=(300+150*depart)*render_scale
+            ramp=QLinearGradient(0,bottom-35*render_scale,0,bottom);ramp.setColorAt(0,QColor(255,255,255,255));ramp.setColorAt(1,QColor(255,255,255,0));fade.fillRect(frame.rect(),ramp);fade.end()
+        transform=QTransform();transform.translate(279-105*depart,y)
+        transform.scale(scale,scale);transform.translate(-240,-200)
         p.save();p.setOpacity(p.opacity()*caster_visibility(age));p.setTransform(transform,True)
         p.drawImage(QRectF(0,0,480,450),frame)
         wand=QImage(frame.size(),QImage.Format.Format_ARGB32_Premultiplied);wand.fill(Qt.GlobalColor.transparent)
-        wp=QPainter(wand);wp.setRenderHint(QPainter.RenderHint.Antialiasing);wp.scale(render_scale,render_scale);wp.translate(wrist);wp.scale(1.15,1.15)
+        # Outer scene scaling already affects body and prop together. Match
+        # the native camera zoom too, which only the character used before.
+        staff_scale=1.15*camera_scale/1.45
+        wp=QPainter(wand);wp.setRenderHint(QPainter.RenderHint.Antialiasing);wp.scale(render_scale,render_scale);wp.translate(wrist);wp.scale(staff_scale,staff_scale)
         local_orb=self.staff(wp,QPointF(0,0),age,reduced);wp.end()
         mask=QPainter(wand);mask.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationOut);mask.drawImage(0,0,occlusion);mask.end()
         self.cast_occlusion=occlusion;self.cast_wand=wand;self.cast_wrist=wrist
         p.save();p.setOpacity(p.opacity()*(1-ease((age-CAST_RETURN)/.75)))
         p.drawImage(QRectF(0,0,480,450),wand);p.restore()
-        self.staff_orb=transform.map(wrist+local_orb*1.15)
+        self.staff_orb=transform.map(wrist+local_orb*staff_scale)
         p.restore()
 
     def staff(self,p,wrist,age,reduced):

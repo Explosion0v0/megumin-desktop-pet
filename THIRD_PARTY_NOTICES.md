@@ -5,7 +5,7 @@
 - `assets/models/megumin*`：Fantastic Days 游戏 Live2D 资源，来源 https://github.com/HaiKonofanDesu/konofan-live2d （实际下载来源以素材来源.txt 为准）。角色/游戏资源权利仍归相关权利方，来源仓库公开不能视为通用再分发/商用许可。
 - 官方惠惠头像/图标与逗之助图片：来源、原版权标记见 `素材来源.txt`，不得重标 MIT。
 - `assets/voices` 原始十种咏唱：来源 https://github.com/pcrbot/Explosion 的 1.0 资源包；未使用其插件代码，保留附带 AGPL 文本。该代码许可不另授予声优表演、动漫对白、音乐或音效权利。
-- `assets/voices/generated`：本地 GPT-SoVITS 生成的日语短句，并非声优新录音。用户声音模型附带非商业/学习交流说明见 `开源许可/用户语音模型附带说明.txt`；权重与参考录音本身没有随附。
+- `assets/voices/generated` 与 `assets/voices/costumes`：本地 GPT-SoVITS 生成的日语短句，并非声优新录音。用户声音模型附带非商业/学习交流说明见 `开源许可/用户语音模型附带说明.txt`；权重与参考录音本身没有随附。
 - Vosk 小模型、运行库按各自条款处理，附带来源/许可文本；不重新标 MIT。
 
 本项目未取得角色素材通用再分发或商业授权，公开项目不代表官方认可，也不保证任何用途均获许可。使用/二次发布须核实相关权利。

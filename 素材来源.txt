@@ -1,4 +1,4 @@
-﻿素材来源 · 下载日期 2026-10-09
+素材来源 · 下载日期 2026-10-09
 
 惠惠 Live2D
 公开资源仓库：https://github.com/HaiKonofanDesu/konofan-live2d
@@ -52,4 +52,17 @@ v12 新增：14 条关节动作贝塞尔曲线和半屏十字粒子演出为本�
 未编辑 Cubism Editor 中的空白测试模型，未声称得到原角色 .cmo3。
 
 
-v12 模型语音：用户本地 C:\惠惠语音模型 提供的 v2ProPlus 权重与参考音频；通过官方 GPT-SoVITS（https://github.com/RVC-Boss/GPT-SoVITS）本地合成 24 条新写的日语台词。AI 合成音频不属于声优新录音。用户模型附带非商业、学习交流说明已保留于开源许可目录。模型权重本身不包含在桌宠包中。哈希及合成记录见 assets/voices/generated/generation.json。
+v12 模型语音：用户本地 用户自备本地语音模型目录 提供的 v2ProPlus 权重与参考音频；通过官方 GPT-SoVITS（https://github.com/RVC-Boss/GPT-SoVITS）本地合成 24 条新写的日语台词。AI 合成音频不属于声优新录音。用户模型附带非商业、学习交流说明已保留于开源许可目录。模型权重本身不包含在桌宠包中。哈希及合成记录见 assets/voices/generated/generation.json。
+
+
+v21 四星校服模型：https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20schooluniform%20megumin
+固定提交：4b2780d63fb26a5a657e712994b8291bd02b959e
+原始文件 SHA 校验见下载验证记录。只有 model3.json 增加 DeskPet 动作组，其余模型资源不修改。
+
+
+v22 新增三套模型，固定提交 4b2780d63fb26a5a657e712994b8291bd02b959e：
+https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20cafe%20megumin
+https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20ny%20megumin
+https://github.com/HaiKonofanDesu/konofan-live2d/tree/main/102%20-%20Megumin/4%20star%20pj%20megumin
+仅在运行副本 model3.json 中增加 DeskPet 原创动作组。其余模型文件逐字节校验保持原样。
+换装专属台词为本项目改编，非官方台词；由原用户提供的模型合成，不改动声音权重。

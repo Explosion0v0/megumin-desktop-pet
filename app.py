@@ -14,19 +14,20 @@ import time
 
 from PySide6.QtCore import Qt, QTimer, QPoint, QPointF, QRectF, Signal, QObject
 from PySide6.QtGui import (QAction, QColor, QFont, QIcon, QPainter, QPainterPath,
-                           QPen, QPixmap, QRadialGradient, QCursor, QImage, QRegion)
+                           QPen, QPixmap, QRadialGradient, QCursor, QImage, QRegion, QActionGroup)
 from PySide6.QtWidgets import (QApplication, QWidget, QMenu, QSystemTrayIcon,
     QDialog, QVBoxLayout, QLabel, QFormLayout, QSpinBox, QSlider, QCheckBox,
-    QPushButton, QMessageBox)
+    QPushButton, QMessageBox, QComboBox)
 from spell_scene import ExplosionStage,CAST_DURATION,CAST_RELEASE,desk_visibility
+from costumes import COSTUMES,legacy_costume
 
-APP_NAME = '惠惠 · Live2D 爆裂桌宠 v20'
+APP_NAME = '惠惠 · Live2D 换装桌宠 v23'
 BASE = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parent))
 ASSETS = BASE / 'assets'
 CONFIG = Path(os.environ.get('APPDATA', str(Path.home()))) / 'MeguminDesktopPet' / 'settings.json'
 DEFAULTS = dict(scale=120, opacity=100, idle_seconds=45, idle_enabled=True,
                 keyboard=True, topmost=True, clickthrough=False, reduced_motion=False,
-                counter=True, eyepatch=False, voice_enabled=True, voice_volume=55, voice_full=True, voice_model=True, voice_caption=True, time_greetings=True, original_cast_revision=10, half_screen=True, x=None, y=None)
+                counter=True, costume='schooluniform', school_uniform=True, eyepatch=False, voice_enabled=True, voice_volume=55, voice_full=True, voice_model=True, voice_caption=True, time_greetings=True, original_cast_revision=10, half_screen=True, x=None, y=None)
 NAMES = ['idle', 'left', 'right', 'happy', 'drink', 'cat', 'cast', 'tired', 'sleep']
 
 
@@ -41,6 +42,9 @@ def load_config():
                     result[k] = value
             elif type(value) is type(default):
                 result[k] = value
+        if raw.get('costume') not in COSTUMES:result['costume']=legacy_costume(result)
+        result['school_uniform']=result['costume']=='schooluniform'
+        result['eyepatch']=result['costume']=='eyepatch'
         result['scale'] = max(60, min(160, result['scale']))
         result['opacity'] = max(35, min(100, result['opacity']))
         result['idle_seconds'] = max(10, min(600, result['idle_seconds']))
@@ -242,6 +246,10 @@ class SettingsDialog(QDialog):
         subtitle = QLabel('把一点爆裂魔法，放在桌面上。')
         layout.addWidget(subtitle)
         form = QFormLayout()
+        self.costume=QComboBox()
+        for key,entry in COSTUMES.items():self.costume.addItem(entry['label'],key)
+        self.costume.setCurrentIndex(max(0,self.costume.findData(pet.settings.get('costume','schooluniform'))))
+        form.addRow('服装造型',self.costume)
         self.scale = QSlider(Qt.Orientation.Horizontal)
         self.scale.setRange(60,160); self.scale.setValue(pet.settings['scale'])
         self.scale_label = QLabel(f"{self.scale.value()}%")
@@ -268,7 +276,7 @@ class SettingsDialog(QDialog):
                 ('half_screen','半屏爆裂演出（鼠标可穿透；Esc 收起）'),
                 ('topmost','保持在最上层'),('counter','显示本次按键次数'),
                 ('reduced_motion','轻柔特效（减少闪光与晃动）'),
-                ('eyepatch','佩戴眼罩（另一套 Live2D 模型）'),
+
                 ('clickthrough','鼠标穿透（用系统托盘菜单恢复）')]:
             box=QCheckBox(text);box.setChecked(pet.settings[key]);layout.addWidget(box);self.checks[key]=box
         hint=QLabel('拖动：移动位置　·　轻点：摸摸头\n双击：爆裂魔法　·　右键 / 托盘：和惠惠聊聊\n桌宠动画离线；问答仅主动发送聊天窗口内容，不保存其他软件输入。')
@@ -282,6 +290,7 @@ class SettingsDialog(QDialog):
     def save(self):
         self.pet.settings.update(scale=self.scale.value(),opacity=self.opacity.value(),idle_seconds=self.idle.value(),voice_volume=self.volume.value())
         for k,box in self.checks.items(): self.pet.settings[k]=box.isChecked()
+        self.pet.set_costume(self.costume.currentData())
         self.pet.apply_settings();self.pet.save_settings();self.accept()
 
 
@@ -295,7 +304,7 @@ class Pet(QWidget):
         self.character=Live2DCharacter(ASSETS)
         from voice import VoicePlayer
         self.voice=VoicePlayer(ASSETS/'voices')
-        self.dialogue_quiet=False
+        self.dialogue_quiet=False;self.pending_costume_voice=None
         from time_greetings import TimeGreetings
         self.calendar=TimeGreetings(None if test_mode or '--smoke-test' in sys.argv else CONFIG.parent/'time-greetings.json');self.next_time_check=0
         self.engine.next_idle=self.engine.last_input+self.settings['idle_seconds']
@@ -391,7 +400,8 @@ class Pet(QWidget):
         else:self.move(old)
         self.clamp_position()
         self.mask_signature=None
-        self.character.eyepatch=self.settings['eyepatch']
+        self.character.costume=self.settings.get('costume','schooluniform')
+        self.character.eyepatch=self.character.costume=='eyepatch'
         self.engine.next_idle=self.engine.last_input+self.settings['idle_seconds']
         if not self.test_mode and not self.hidden_by_user:self.show()
         if self.tray:self.tray.setContextMenu(self.make_menu())
@@ -430,6 +440,11 @@ class Pet(QWidget):
         for text,motion in [('得意','00_Pride_01'),('害羞','00_Shame_01'),('惊讶','00_Surprise_01'),('疑惑','00_Doubt_01'),('生气','00_Anger_01'),('哭泣','00_Cry_01'),('兴奋','00_Excite_01'),('招呼','00_Appeal_01')]:
             expressions.addAction(text).triggered.connect(lambda checked=False,m=motion:self.native_motion(m))
         menu.addSeparator()
+        wardrobe=menu.addMenu('服装造型');group=QActionGroup(wardrobe);group.setExclusive(True)
+        for key,entry in COSTUMES.items():
+            action=wardrobe.addAction(entry['label']);action.setCheckable(True);action.setChecked(self.settings.get('costume')==key);group.addAction(action)
+            action.triggered.connect(lambda checked=False,k=key:self.set_costume(k))
+        wardrobe.addSeparator();wardrobe.addAction('试听当前换装语音',self.preview_costume_voice)
         menu.addAction('冒险设置…',self.open_settings)
         menu.addAction('试听爆裂语音',lambda:self.preview_voice())
         menu.addAction('按当前时间问候',lambda:self.time_greeting(force=True))
@@ -507,6 +522,35 @@ class Pet(QWidget):
             self.voice.stop();self.voice.pending=None;self.voice.played_cast=True
             self.overlay.stop();self.engine.voice_mouth=None;self.update()
 
+    def toggle_school_uniform(self,enabled):
+        return self.set_costume('schooluniform' if enabled else 'classic')
+
+    def set_costume(self,key):
+        if key not in COSTUMES or self.settings.get('costume')==key:return False
+        if self.engine.state=='cast':self.cancel_cast()
+        self.settings.update(costume=key,school_uniform=key=='schooluniform',eyepatch=key=='eyepatch')
+        self.character.desktop_scene=QImage()
+        self.apply_settings();self.save_settings();self.pending_costume_voice=key
+        self.play_pending_costume_voice(time.monotonic());self.update();return True
+
+    def preview_costume_voice(self):
+        self.pending_costume_voice=self.settings.get('costume','schooluniform')
+        return self.play_pending_costume_voice(time.monotonic())
+
+    def play_pending_costume_voice(self,now):
+        if not self.pending_costume_voice:return False
+        if self.engine.state=='cast' or self.conversation_busy():return False
+        key=self.pending_costume_voice;self.pending_costume_voice=None
+        clip=self.voice.costume_clip(key)
+        if not clip:return False
+        if self.dialogue_quiet or self.hidden_by_user:return False
+        spoken=False
+        if self.settings.get('voice_enabled',True) and self.settings.get('voice_model',True) and self.settings.get('voice_volume',55)>0:
+            spoken=self.voice.play(clip,self.settings['voice_volume'],now)
+        self.voice.seen_action=(self.engine.state,self.engine.since)
+        self.engine.say(clip['zh'],now,max(4,clip['duration']+.25));self.update()
+        return spoken
+
     def toggle_voice(self,enabled):
         self.settings['voice_enabled']=enabled
         if not enabled:self.voice.stop()
@@ -575,6 +619,7 @@ class Pet(QWidget):
             self.engine.last_input=now;self.engine.next_idle=now+self.settings['idle_seconds']
             return
         cfg=self.conversation_settings()
+        self.play_pending_costume_voice(now)
         self.voice.tick(self.engine,cfg,now)
         self.engine.tick(now,cfg,dt)
         # Idle interactions may start a cast during Engine.tick.
@@ -682,7 +727,7 @@ class Pet(QWidget):
         if not self.test_mode:self.update_hit_mask(pose,bubble_visible,e.state=='cast',tilt)
 
     def update_hit_mask(self,pose,bubble,magic,tilt):
-        signature=(pose,bubble,magic,self.settings['scale'],self.settings['counter'],self.settings['eyepatch'])
+        signature=(pose,bubble,magic,self.settings['scale'],self.settings['counter'],self.settings.get('costume','schooluniform'))
         if signature==self.mask_signature:return
         self.mask_signature=signature
         s=self.settings['scale']/100

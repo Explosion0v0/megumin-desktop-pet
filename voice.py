@@ -29,6 +29,8 @@ class VoicePlayer:
         self.folder=Path(folder);self.entries=json.loads((self.folder/'manifest.json').read_text(encoding='utf-8'))
         generated=self.folder/'generated/manifest.json'
         self.generated=json.loads(generated.read_text(encoding='utf-8')) if generated.exists() else None
+        outfits=self.folder/'costumes/manifest.json'
+        self.costumes=json.loads(outfits.read_text(encoding='utf-8')) if outfits.is_file() else None
         self.source_model=bool(self.generated);self.seen_action=None;self.last_scene={}
         self.api=ctypes.WinDLL('winmm');self.handle=ctypes.c_void_p();self.buffer=None;self.header=None
         self.clip=None;self.started=0;self.error='';self.history=[];self.last_variant=None
@@ -54,6 +56,13 @@ class VoicePlayer:
     def scene_clip(self,scene):
         candidates=self.generated['scenes'].get(scene,[]) if self.generated else []
         if not candidates:return None
+        choices=[x for x in candidates if x['file']!=self.last_scene.get(scene)] or candidates
+        entry=random.choice(choices);self.last_scene[scene]=entry['file'];return entry
+
+    def costume_clip(self,costume):
+        candidates=self.costumes['scenes'].get(costume,[]) if self.costumes else []
+        if not candidates:return None
+        scene='costume:'+costume
         choices=[x for x in candidates if x['file']!=self.last_scene.get(scene)] or candidates
         entry=random.choice(choices);self.last_scene[scene]=entry['file'];return entry
 

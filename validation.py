@@ -181,10 +181,14 @@ def start_live_smoke(app,pet):
         result['real_rig_deformation']=any(abs(x-y)>.01 for x,y in zip(before,after))
         for name,value in snapshot.items():c.param(name,value)
         c.fbo.release();c.context.doneCurrent()
-        pet.settings['eyepatch']=True;pet.apply_settings();render()
+        original_costume=pet.settings.get('school_uniform',False)
+        result['school_uniform_initial']=original_costume and 'megumin-schooluniform' in c.renderer_info['model_file']
+        pet.settings.update(costume='eyepatch',school_uniform=False,eyepatch=True);pet.apply_settings();render()
         result['eyepatch_model_setting']=c.loaded_eyepatch and 'megumin-eyepatch' in c.renderer_info['model_file']
-        pet.settings['eyepatch']=False;pet.apply_settings();render()
+        pet.settings.update(costume='classic',eyepatch=False);pet.apply_settings();render()
         result['model_reload_back']=not c.loaded_eyepatch
+        pet.settings.update(costume='schooluniform' if original_costume else 'classic',school_uniform=original_costume);pet.apply_settings();render()
+        result['school_uniform_reload_back']=original_costume and c.loaded_school_uniform and 'megumin-schooluniform' in c.renderer_info['model_file']
         from app import Engine
         pet.engine=Engine(now=time.monotonic(),seed=1)
         def render_input():
@@ -246,6 +250,7 @@ def start_live_smoke(app,pet):
         result.update(check_reading_music(pet))
         result['passed']=all(result[k] for k in ['real_input_response','tray_visible','transparent_window','cat_action','cast_action',
             'clickthrough_style','restored_mouse_operation','scale_setting','opacity_setting','hide_works','restore_works','settings_dialog',
+            'school_uniform_initial','school_uniform_reload_back',
             'genuine_cubism_model','transparent_model_frame','native_skill_motion','official_cat_art','real_rig_deformation','eyepatch_model_setting','model_reload_back',
             'mouse_hand_moves_independently','key_labels_and_exact_highlight','keyboard_hand_moves_independently',
             'casting_leaves_desk','casting_live2d_visible','staff_follows_native_hand','casting_returns_to_desk','voice_checks_passed','voice_drives_native_mouth','half_screen_checks_passed','model_voice_checks_passed','v11_checks_passed'])
